@@ -83,7 +83,6 @@
 docker compose down
 ```
 
-![img.png](img.png)
 
 ### Проверка сервисов
 ```

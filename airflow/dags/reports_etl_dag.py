@@ -19,13 +19,17 @@ def load_crm_and_telemetry(**_):
     client.command("CREATE TABLE IF NOT EXISTS load_markers (loaded_from DateTime, loaded_to DateTime) ENGINE = ReplacingMergeTree ORDER BY loaded_to")
 
     # Заглушка: вставка синтетических данных
+    # Используем реальные Keycloak subject IDs, чтобы /reports возвращал данные.
+    # Значения можно переопределить через env, если ID в Keycloak отличаются.
     now = datetime.utcnow()
     start = now - timedelta(days=1)
     end = now
+    user1_sub = os.getenv("USER1_SUB", "11111111-1111-1111-1111-111111111111")
+    user2_sub = os.getenv("USER2_SUB", "22222222-2222-2222-2222-222222222222")
     rows = [
-        ("user1-sub", now, 0.7),
-        ("user1-sub", now, 0.9),
-        ("user2-sub", now, 0.5),
+        (user1_sub, now, 0.7),
+        (user1_sub, now, 0.9),
+        (user2_sub, now, 0.5),
     ]
     client.insert("user_reports", rows, column_names=["user_sub", "ts", "metric"])
 

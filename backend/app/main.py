@@ -23,7 +23,7 @@ app = FastAPI(title="BionicPRO Reports API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", "http://localhost:3001"],
-    allow_origin_regex=r"https?://localhost:\\d+",
+    allow_origin_regex=r"https?://localhost:\d+",
     allow_credentials=True,
     allow_methods=["GET", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type"]
@@ -211,5 +211,4 @@ def get_report(
 
     headers = {"Content-Disposition": "attachment; filename=report.txt"}
     return Response(content=content, media_type="text/plain; charset=utf-8", headers=headers)
-
 

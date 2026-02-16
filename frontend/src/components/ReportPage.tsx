@@ -18,6 +18,13 @@ const ReportPage: React.FC = () => {
       setLoading(true);
       setError(null);
 
+      // Ensure token is fresh to avoid 401 on expired access token
+      try {
+        await keycloak.updateToken(30);
+      } catch {
+        throw new Error('Session expired. Please login again.');
+      }
+
       const params = new URLSearchParams();
       if (startDate) params.set('start', `${startDate}T00:00:00`);
       if (endDate) params.set('end', `${endDate}T23:59:59`);

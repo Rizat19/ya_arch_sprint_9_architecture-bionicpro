@@ -21,12 +21,15 @@ services:
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
+      KEYCLOAK_INTERNAL_URL: http://keycloak:8080
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://keycloak_db:5432/keycloak_db
       KC_DB_USERNAME: keycloak_user
       KC_DB_PASSWORD: keycloak_password
       KC_HOSTNAME_URL: http://localhost:8080
       KC_HOSTNAME_ADMIN_URL: http://localhost:8080
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
     command: 
       - start-dev
       - --import-realm
@@ -37,6 +40,17 @@ services:
     depends_on:
       keycloak_db:
         condition: service_healthy
+  keycloak_init:
+    image: quay.io/keycloak/keycloak:21.1
+    entrypoint: ["/bin/sh", "/init/init.sh"]
+    environment:
+      KEYCLOAK_INTERNAL_URL: http://keycloak:8080
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    volumes:
+      - ./keycloak/init.sh:/init/init.sh:ro
+    depends_on:
+      - keycloak
   frontend:
     build:
       context: ./frontend
@@ -79,6 +93,7 @@ services:
   airflow:
     image: apache/airflow:2.9.2
     environment:
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'false'
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
       _PIP_ADDITIONAL_REQUIREMENTS: 'clickhouse-connect==0.7.17'
       CLICKHOUSE_HOST: clickhouse
@@ -86,6 +101,8 @@ services:
       CLICKHOUSE_USER: default
       CLICKHOUSE_PASSWORD: ""
       CLICKHOUSE_DB: reports
+      USER1_SUB: 11111111-1111-1111-1111-111111111111
+      USER2_SUB: 22222222-2222-2222-2222-222222222222
     volumes:
       - ./airflow/dags:/opt/airflow/dags
     command: bash -c "set -e; airflow db init || true; airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com || true; exec airflow standalone"
